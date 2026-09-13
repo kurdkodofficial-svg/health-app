@@ -1,0 +1,121 @@
+<script>
+const $ = s => document.querySelector(s);
+const store = {
+  get: () => JSON.parse(localStorage.getItem('appts') || '[]'),
+  set: v => localStorage.setItem('appts', JSON.stringify(v))
+};
+
+function toast(m, t='') {
+  const x = $('#toast');
+  x.textContent = m;
+  x.className = 'toast show ' + t;
+  clearTimeout(x._h);
+  x._h = setTimeout(() => x.classList.remove('show'), 2800);
+}
+
+function preselect(h) { $('#selHospital').value = h; }
+
+function renderAppts() {
+  const l = store.get(), w = $('#apptList');
+  if(!l.length) {
+    w.innerHTML = '<p class="empty">هێشتا هیچ چاوپێکەوتنێک تۆمار نەکراوە.</p>';
+    return;
+  }
+  w.innerHTML = l.map(a => `
+    <div class="appt">
+      <div>
+        <b>${a.hospital}</b> — ${a.service}
+        <small>🗓️ ${a.date} • ⏰ ${a.time}</small>
+        <small>👤 ${a.name} • 📞 ${a.phone}</small>
+        ${a.notes ? `<small>📝 ${a.notes}</small>` : ''}
+      </div>
+      <button class="del" data-del="${a.id}" title="سڕینەوە">🗑️</button>
+    </div>
+  `).join('');
+}
+
+$('#apptForm').addEventListener('submit', e => {
+  e.preventDefault();
+  const f = e.target;
+  const a = {
+    id: Date.now(),
+    name: f.elements.name.value.trim(),
+    phone: f.elements.phone.value.trim(),
+    hospital: f.elements.hospital.value,
+    service: f.elements.service.value,
+    date: f.elements.date.value,
+    time: f.elements.time.value,
+    notes: f.elements.notes.value.trim()
+  };
+  const l = store.get();
+  l.unshift(a);
+  store.set(l);
+  renderAppts();
+  f.reset();
+  toast('✅ تۆمار کرا: ' + a.date + ' — ' + a.time);
+});
+
+document.addEventListener('click', e => {
+  const d = e.target.closest('[data-del]');
+  if(d) {
+    store.set(store.get().filter(a => String(a.id) !== d.dataset.del));
+    renderAppts();
+    toast('چاوپێکەوتن سڕایەوە');
+  }
+});
+
+(function(){
+  const d = new Date();
+  d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+  document.querySelector('[name=date]').min = d.toISOString().slice(0, 10);
+})();
+
+function setTheme(t) {
+  document.documentElement.dataset.theme = t;
+  localStorage.setItem('hm_theme', t);
+  $('#themeBtn').textContent = t === 'dark' ? '☀️' : '🌙';
+}
+setTheme(localStorage.getItem('hm_theme') || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'));
+$('#themeBtn').onclick = () => setTheme(document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark');
+
+let deferredPrompt = null;
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredPrompt = e;
+  $('#promptInstall').style.display = 'inline-flex';
+});
+
+function openInstall() {
+  if(deferredPrompt) {
+    deferredPrompt.prompt();
+    deferredPrompt.userChoice.then(({outcome}) => {
+      if(outcome === 'accepted') toast('🎉 ئەپەکە دادەمەزرێت...');
+      deferredPrompt = null;
+      closeModal();
+    });
+  } else {
+    $('#installModal').classList.add('show');
+  }
+}
+
+function closeModal() { $('#installModal').classList.remove('show'); }
+$('#closeModal').onclick = closeModal;
+$('#promptInstall').onclick = openInstall;
+$('#installModal').addEventListener('click', e => { if(e.target.id === 'installModal') closeModal(); });
+window.addEventListener('appinstalled', () => { deferredPrompt = null; closeModal(); toast('✅ ئەپەکە بە سەرکەوتوویی دامەزرا 🎉'); });
+
+if(matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true) {
+  document.querySelectorAll('.install-btn, .install-banner').forEach(el => el.style.display = 'none');
+}
+
+addEventListener('offline', () => toast('🔌 ئینتەرنێت نەماوە — ئەپ هەر کاردەکات', 'warn'));
+addEventListener('online',  () => toast('✅ ئینتەرنێت گەڕایەوە'));
+
+if('serviceWorker' in navigator) {
+  window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(console.error));
+}
+
+renderAppts();
+</script>
+</body>
+</html>
