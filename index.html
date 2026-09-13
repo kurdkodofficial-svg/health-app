@@ -26,3 +26,48 @@
 </style>
 </head>
 <body>
+<div class="container">
+  <header>
+    <h1>🌙 ئەپی تەندروستی</h1>
+    <div>
+      <button class="btn install-btn" id="promptInstall" style="display:none;">📲 دامەزراندن</button>
+      <button class="btn" id="themeBtn">🌙</button>
+    </div>
+  </header>
+
+  <section class="card">
+    <h2>🏥 چاوپێکەوتنی نوێ</h2>
+    <form id="apptForm">
+      <input type="text" name="name" placeholder="ناوی تەواو" required>
+      <input type="tel" name="phone" placeholder="ژمارەی تەلەفۆن" required>
+      <select name="hospital" id="selHospital">
+        <option value="نەخۆشخانەی A">نەخۆشخانەی A (کوردستان)</option>
+        <option value="نەخۆشخانەی B">نەخۆشخانەی B (عێراق)</option>
+      </select>
+      <select name="service">
+        <option value="سەرەتایی">خزمەتگوزاری سەرەتایی</option>
+        <option value="تایبەتمەند">خزمەتگوزاری تایبەتمەند</option>
+        <option value="فریاکەوتن">فریاکەوتن</option>
+      </select>
+      <input type="date" name="date" required>
+      <input type="time" name="time" required>
+      <textarea name="notes" placeholder="تێبینی..."></textarea>
+      <button type="submit" class="btn">تۆمارکردن</button>
+    </form>
+  </section>
+
+  <section class="card">
+    <h2>📅 لیست چاوپێکەوتنەکان</h2>
+    <div id="apptList"></div>
+  </section>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<div class="modal" id="installModal">
+  <div class="modal-content">
+    <h3>چۆنیەتی دامەزراندن</h3>
+    <p>تکایە لە مێنیوی براوسەرەکەتدا 'Add to Home Screen' یان 'Install' هەڵبژێرە.</p>
+    <button class="btn" id="closeModal">داخستن</button>
+  </div>
+</div>
