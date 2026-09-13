@@ -1,0 +1,6 @@
+health-app/
+├── index.html
+├── manifest.json
+├── sw.js
+├── icon.svg
+└── icon-maskable.svg
